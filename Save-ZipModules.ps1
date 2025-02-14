@@ -1,0 +1,67 @@
+﻿function Save-ZipModules {
+    param(
+        [array]$Modules = @(), # Array of hashtables or a single hashtable, e.g., @{Name="Module1"; Version="1.0.0"} or @(@{Name="Module1"; Version="1.0.0"})
+        [string]$DestinationPath,
+        [switch]$DeleteExistingContents
+    )
+
+    # Normalize input: If a single hashtable is provided, wrap it in an array
+    if ($Modules -isnot [array]) {
+        $Modules = @($Modules)
+    }
+
+    # Append "\Modules" to the DestinationPath
+    $ModulesPath = Join-Path -Path $DestinationPath -ChildPath "Modules"
+
+    # Check if the optional switch is set to delete existing contents
+    if ($DeleteExistingContents) {
+        if (Test-Path -Path $ModulesPath) {
+            # Clear out the existing contents (folders and subfolders)
+            Remove-Item -Path $ModulesPath -Recurse -Force
+        }
+    }
+
+    # Validate that DestinationPath exists, if it does not, create it
+    if (-not (Test-Path -Path $ModulesPath)) {
+        New-Item -ItemType Directory -Path $ModulesPath | Out-Null
+    }
+
+    # Iterate over each module in the Modules array
+    foreach ($module in $Modules) {
+        $ModuleName = $module.Name
+        $ModuleVersion = $module.Version
+
+        # Validate the module exists; if it does, continue
+        $foundModule = Find-Module -Name $ModuleName -RequiredVersion $ModuleVersion
+        if (-not $foundModule) {
+            Write-Error "Module $ModuleName version $ModuleVersion not found in repository."
+            continue
+        }
+
+        # Save the module to the DestinationPath
+        Save-Module -Name $ModuleName -RequiredVersion $ModuleVersion -Path $ModulesPath
+    }
+
+    # Create a Zip file of the folders in the DestinationPath\Modules path
+    $ZipFilePath = Join-Path -Path $DestinationPath -ChildPath "Modules.zip"
+    Compress-Archive -Path (Join-Path -Path $ModulesPath -ChildPath "*") -DestinationPath $ZipFilePath -Force
+
+    Write-Host "Modules have been saved to $ModulesPath and zipped to $ZipFilePath."
+}
+
+# Example script to call the function with different inputs
+
+# Single module input
+#$Module1 = @{Name="Az.Resources"; Version="6.5.3"}
+#Save-ZipModules -Modules $Module1 -DestinationPath "C:\MyModules" -DeleteExistingContents
+
+# Multiple modules input
+$Modules = @(
+    @{Name="Az.Resources"; Version="6.5.3"},
+    @{Name="Az.Compute"; Version="5.6.0"},
+    @{Name="Az.Accounts"; Version="2.12.1"},
+    @{Name="Az.KeyVault"; Version="4.9.2"},
+    @{Name="Az.DesktopVirtualization"; Version="3.1.1"},
+    @{Name="Az.Avd"; Version="3.1.0"}
+)
+Save-ZipModules -Modules $Modules -DestinationPath "C:\MyModules"
