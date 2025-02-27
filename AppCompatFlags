@@ -1,0 +1,27 @@
+# Define Registry Path
+$RegPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
+
+# Define the target application path
+$JavawPath = "C:\Program Files (x86)\Java\jre7u25\bin\javaw.exe"
+
+# Auto-set DPI mode (Modify this variable if needed)
+$AutoChoice = "1"  # Change to "2" or "3" if needed
+
+# Set DPI Compatibility flag based on pre-defined choice
+switch ($AutoChoice) {
+    "1" { $DPIValue = "~ HIGHDPIAWARE" }
+    "2" { $DPIValue = "~ DPIUNAWARE" }
+    "3" { $DPIValue = "~ DPIUNAWARE GDISCALED" }
+    default {
+        Write-Host "Invalid choice. Exiting..."
+        exit 1
+    }
+}
+
+# Apply the settings in the registry
+try {
+    Set-ItemProperty -Path $RegPath -Name $JavawPath -Value $DPIValue -Type String -Force
+    Write-Host "DPI override setting applied successfully."
+} catch {
+    Write-Host "Failed to apply the DPI override setting. Error: $_"
+}
