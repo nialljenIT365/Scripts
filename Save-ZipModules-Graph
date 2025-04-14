@@ -52,8 +52,9 @@ function Save-ZipModules {
 # Example script to call the function with different inputs
 
 # Single module input
-#$Module1 = @{Name="Microsoft.Graph"; Version="2.25.1"}
-#Save-ZipModules -Modules $Module1 -DestinationPath "C:\MyModules" -DeleteExistingContents
+$Module1 = @{Name="Microsoft.Graph"; Version="2.26.1"}
+#$Module1 = @{Name="Microsoft.Graph"}
+Save-ZipModules -Modules $Module1 -DestinationPath "C:\MyModules" -DeleteExistingContents
 
 # Multiple modules input
 #$Modules = @(
