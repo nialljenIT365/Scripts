@@ -4,6 +4,7 @@
     <Exclude Copy="0">AppData\Local\Microsoft\Edge</Exclude>
     <Exclude Copy="0">AppData\Local\Downloaded Installations</Exclude>
     <Exclude Copy="0">AppData\Local\Google\Chrome\User Data\Default\Cache</Exclude>
+    <Exclude Copy="0">AppData\Local\Google\Chrome\User Data\Default\Code Cache</Exclude>
     <Exclude Copy="0">AppData\Local\Google\Chrome\User Data\Default\Cached Theme Image</Exclude>
     <Exclude Copy="0">AppData\Local\Google\Chrome\User Data\Default\GPUCache</Exclude>
     <Exclude Copy="0">AppData\Local\Google\Chrome\User Data\Default\JumpListIcons</Exclude>
