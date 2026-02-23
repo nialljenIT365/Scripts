@@ -1,0 +1,30 @@
+# Basic script: find the built-in local Administrator account (RID 500) and set a hardcoded password
+# Run elevated (Administrator/System)
+
+$HardcodedPassword = 'P@ssw0rd123!'   # <-- change this
+
+try {
+    # Get the built-in local admin account by SID ending in -500 (works even if renamed)
+    $localAdmin = Get-LocalUser | Where-Object { $_.SID.Value -match '-500$' }
+
+    if (-not $localAdmin) {
+        throw "Could not find the built-in local administrator account (RID 500)."
+    }
+
+    Write-Host "Built-in local admin account found: $($localAdmin.Name)" -ForegroundColor Cyan
+
+    # Set password (net user is simple and works if account is renamed)
+    $output = cmd.exe /c "net user `"$($localAdmin.Name)`" `"$HardcodedPassword`"" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to set password. Output: $($output -join ' ')"
+    }
+
+    # Optional: enable the account
+    Enable-LocalUser -Name $localAdmin.Name -ErrorAction SilentlyContinue
+
+    Write-Host "Password updated successfully for local admin account: $($localAdmin.Name)" -ForegroundColor Green
+}
+catch {
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    throw
+}
