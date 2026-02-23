@@ -1,0 +1,26 @@
+# Basic script: find the built-in local Administrator account (RID 500) and enable it if disabled
+# Run elevated (Administrator/System)
+
+try {
+    # Get the built-in local admin account by SID ending in -500 (works even if renamed)
+    $localAdmin = Get-LocalUser | Where-Object { $_.SID.Value -match '-500$' }
+
+    if (-not $localAdmin) {
+        throw "Could not find the built-in local administrator account (RID 500)."
+    }
+
+    Write-Host "Built-in local admin account found: $($localAdmin.Name)" -ForegroundColor Cyan
+    Write-Host "Current enabled state: $($localAdmin.Enabled)" -ForegroundColor Yellow
+
+    if ($localAdmin.Enabled) {
+        Write-Host "Local administrator account is already enabled." -ForegroundColor Green
+    }
+    else {
+        Enable-LocalUser -Name $localAdmin.Name -ErrorAction Stop
+        Write-Host "Local administrator account has been enabled: $($localAdmin.Name)" -ForegroundColor Green
+    }
+}
+catch {
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    throw
+}
