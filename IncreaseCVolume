@@ -1,0 +1,25 @@
+try {
+    Write-Host "===================================" -ForegroundColor White
+    Write-Host "C: Drive Expansion Script" -ForegroundColor White
+    Write-Host "===================================" -ForegroundColor White
+
+    Write-Host "Getting volume information..." -ForegroundColor Cyan
+    Get-Volume
+
+    Write-Host "Getting partition information..." -ForegroundColor Cyan
+    Get-Partition
+
+    Write-Host "Checking supported partition size..." -ForegroundColor Cyan
+    Get-PartitionSupportedSize -DriveLetter C
+
+    $max = (Get-PartitionSupportedSize -DriveLetter C).SizeMax
+
+    Write-Host "Expanding C: drive to maximum size..." -ForegroundColor Yellow
+    Resize-Partition -DriveLetter C -Size $max
+
+    Write-Host "C: drive successfully expanded to maximum size." -ForegroundColor Green
+}
+catch {
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    throw
+}
