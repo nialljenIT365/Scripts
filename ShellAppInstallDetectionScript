@@ -1,0 +1,4 @@
+$basePath = "C:\Program Files\Adobe\Acrobat DC\Acrobat\"
+$fileName = "Acrobat.exe"
+$filePath = Join-Path $basePath $fileName
+return Test-Path $filePath
