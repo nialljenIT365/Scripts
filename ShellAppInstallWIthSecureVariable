@@ -1,0 +1,32 @@
+# define <securevariablename>, note the securevariablename you define in Nerdio needs to be set on line 20 AFTER it has been set in Settings -> Environment -> Nerdio -> Secure Variables -> Add Secure Variable
+[CmdletBinding()]
+param (
+    [Parameter(Mandatory)]
+    [string] $SecureVar_<securevariablename>
+)
+# Define your storage path (storage account and share names)
+$storageAccount = "<storageAccountName>"
+$shareName = "<ShareName>"
+$uncPath = "\\$storageAccount.file.core.windows.net\$shareName"
+# $baseSourcePath will be the name of the folder on the share that contains your install source(s)
+$baseSourcePath = "$uncPath\Adobe Acrobat Standard"
+#Define Base Destination Path and create folder if it does not exist
+$baseDestinationPath = "C:\Packages\Installers\AdobeAcrobatStandard"
+if (-Not (Test-Path $baseDestinationPath)) {
+        New-Item -Path $baseDestinationPath -ItemType Directory
+        Write-Output "Created destination directory at $baseDestinationPath"
+    }
+# Add Azure Files credentials using cmdkey
+$cmd = "/add:$storageAccount.file.core.windows.net /user:localhost\$storageAccount /pass:$SecureVar_<securevariablename>"
+cmd.exe /C "cmdkey $cmd"
+# Proceed to copy files from source share
+Copy-Item -Path "$baseSourcePath\*" -Destination $baseDestinationPath -Recurse -Force
+# Run installer from local folder
+$exePath = "$baseDestinationPath\24.005.20320\setup.exe"
+$installCommand = "& $exePath"
+# Note the wait command is necessary to prevent clean up from running before install completes
+Start-Process -FilePath $exePath -Wait
+# Clean up cached credentials and install sources
+cmd.exe /C "cmdkey /delete:$storageAccount.file.core.windows.net"
+Get-ChildItem "$baseDestinationPath" -Recurse | Remove-Item -Force -Recurse
+Remove-Item -Path $baseDestinationPath -Force
